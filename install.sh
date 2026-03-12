@@ -12,9 +12,18 @@ BIND_LINE="bind-key v run-shell 'bash $INSTALL_DIR/$SCRIPT_NAME'"
 
 echo "Installing wsl-tmux-paste-image..."
 
+# Check for curl
+if ! command -v curl &>/dev/null; then
+    echo "Error: curl is required but not installed." >&2
+    exit 1
+fi
+
 # Download script to ~/.local/bin
 mkdir -p "$INSTALL_DIR"
-curl -fsSL "$RAW_URL/$SCRIPT_NAME" -o "$INSTALL_DIR/$SCRIPT_NAME"
+if ! curl -fsSL "$RAW_URL/$SCRIPT_NAME" -o "$INSTALL_DIR/$SCRIPT_NAME"; then
+    echo "Error: Failed to download $SCRIPT_NAME. Check your network connection." >&2
+    exit 1
+fi
 chmod +x "$INSTALL_DIR/$SCRIPT_NAME"
 echo "  Installed $INSTALL_DIR/$SCRIPT_NAME"
 
@@ -24,7 +33,13 @@ if [ ! -f "$TMUX_CONF" ]; then
     echo "$BIND_LINE" | tee -a "$TMUX_CONF" > /dev/null
     echo "  Created $TMUX_CONF with paste-image binding"
 elif grep -qF "tmux-paste-image" "$TMUX_CONF"; then
-    echo "  Binding already exists in $TMUX_CONF (skipped)"
+    # Update existing binding in case the path changed
+    sed -i '/tmux-paste-image/d' "$TMUX_CONF"
+    sed -i '/# Paste image from clipboard/d' "$TMUX_CONF"
+    echo "" | tee -a "$TMUX_CONF" > /dev/null
+    echo "# Paste image from clipboard (prefix + v)" | tee -a "$TMUX_CONF" > /dev/null
+    echo "$BIND_LINE" | tee -a "$TMUX_CONF" > /dev/null
+    echo "  Updated paste-image binding in $TMUX_CONF"
 else
     echo "" | tee -a "$TMUX_CONF" > /dev/null
     echo "# Paste image from clipboard (prefix + v)" | tee -a "$TMUX_CONF" > /dev/null

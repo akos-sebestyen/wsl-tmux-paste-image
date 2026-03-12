@@ -6,7 +6,7 @@
 SCREENSHOT_DIR="${1:-$HOME/.cache/tmux-paste-image}"
 mkdir -p "$SCREENSHOT_DIR"
 
-FILENAME="image_$(date +%Y-%m-%d_%H-%M-%S).png"
+FILENAME="image_$(date +%Y-%m-%d_%H-%M-%S)_$$.png"
 FILE_PATH="$SCREENSHOT_DIR/$FILENAME"
 
 # Use PowerShell to save Windows clipboard image to a temp Windows path,
@@ -46,10 +46,10 @@ fi
 # Detect if current pane is running Claude Code
 PANE_CONTENT=$(tmux capture-pane -p | tail -5)
 
-if echo "$PANE_CONTENT" | grep -qE "(^›|^>|claude)"; then
-    tmux send-keys "/image $FILE_PATH" Enter
+if echo "$PANE_CONTENT" | grep -qE "^(›|>) |claude[ ->]"; then
+    tmux send-keys "/image \"$FILE_PATH\"" Enter
     tmux display-message "[paste-image] Image sent to Claude: $FILENAME"
 else
-    tmux send-keys "$FILE_PATH"
+    tmux send-keys "\"$FILE_PATH\""
     tmux display-message "[paste-image] Path pasted: $FILE_PATH"
 fi
