@@ -27,8 +27,8 @@ if (\$img -ne \$null) {
 " 2>/dev/null | tr -d '\r')
 
 if [ "$RESULT" != "OK" ]; then
-    tmux display-message "[paste-image] No image in clipboard."
-    exit 1
+    tmux display-message -d 2000 "[paste-image] No image in clipboard."
+    exit 0
 fi
 
 # Convert Windows temp path to WSL path and copy
@@ -39,7 +39,7 @@ cp "$WIN_PATH_WSL" "$FILE_PATH" 2>/dev/null
 powershell.exe -NoProfile -Command "Remove-Item -Path '${WIN_FILE}' -ErrorAction SilentlyContinue" &>/dev/null &
 
 if [ ! -s "$FILE_PATH" ]; then
-    tmux display-message "[paste-image] Failed to save image."
+    tmux display-message -d 2000 "[paste-image] Failed to save image."
     exit 1
 fi
 
@@ -48,8 +48,8 @@ PANE_CONTENT=$(tmux capture-pane -p | tail -5)
 
 if echo "$PANE_CONTENT" | grep -qE "^(›|>) |claude[ ->]"; then
     tmux send-keys "/image \"$FILE_PATH\"" Enter
-    tmux display-message "[paste-image] Image sent to Claude: $FILENAME"
+    tmux display-message -d 2000 "[paste-image] Image sent to Claude: $FILENAME"
 else
     tmux send-keys "\"$FILE_PATH\""
-    tmux display-message "[paste-image] Path pasted: $FILE_PATH"
+    tmux display-message -d 2000 "[paste-image] Path pasted: $FILE_PATH"
 fi
