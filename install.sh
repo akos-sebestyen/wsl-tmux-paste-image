@@ -36,6 +36,8 @@ elif grep -qF "tmux-paste-image" "$TMUX_CONF"; then
     # Update existing binding in case the path changed
     sed -i '/tmux-paste-image/d' "$TMUX_CONF"
     sed -i '/# Paste image from clipboard/d' "$TMUX_CONF"
+    # Clean trailing blank lines to avoid accumulation on repeated installs
+    sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$TMUX_CONF"
     echo "" | tee -a "$TMUX_CONF" > /dev/null
     echo "# Paste image from clipboard (prefix + v)" | tee -a "$TMUX_CONF" > /dev/null
     echo "$BIND_LINE" | tee -a "$TMUX_CONF" > /dev/null
